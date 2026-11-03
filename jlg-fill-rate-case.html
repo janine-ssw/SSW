@@ -1,0 +1,613 @@
+<title>JLG Fill Rate Case</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,450;9..144,560;9..144,650&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Design: So Shall We Client Ops diagnostic template (single dark look). Colors follow the entity:
+     lime = paid from earlier leads / excluding SE, orange = paid from new leads, steel = non-paid, rose = Still Employed. */
+  :root{
+    color-scheme:dark;
+    --bg:#0A0A0B;
+    --panel:#131315;
+    --panel-soft:#18181B;
+    --panel-raise:#1D1D20;
+    --border:#242428;
+    --border-soft:#1C1C1F;
+    --ink:#F2F2EE;
+    --ink-soft:#E4E4E1;
+    --ink-faint:#B7B7BC;
+    --lime:#D7F24B;
+    --lime-dim:#8FA63A;
+    --orange:#FFA53D;
+    --rose:#FB7185;
+    --bar-prior:#2B2B2F;
+    --bar-steady:#5A5A60;
+    --reported:#86868D;
+    --paid-old:var(--lime);
+    --paid-new:var(--orange);
+    --nonpaid:var(--bar-steady);
+    --se:var(--rose);
+    --real:var(--lime);
+    --serif:'Fraunces',Georgia,serif;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+    --maxw:46rem;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);font-size:15px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important;}html{scroll-behavior:auto;}}
+  h1,h2,h3{font-family:var(--serif);letter-spacing:-0.01em;margin:0;font-weight:560;text-wrap:balance;}
+  p{margin:0;}
+  strong,b{font-weight:600;color:var(--ink);}
+  :focus-visible{outline:2px solid var(--lime);outline-offset:2px;border-radius:3px;}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-left:max(1.4rem, env(safe-area-inset-left, 0px));padding-right:max(1.4rem, env(safe-area-inset-right, 0px));}
+
+  /* ---------- MASTHEAD ---------- */
+  header.hero{
+    background:
+      radial-gradient(ellipse at 12% -20%, rgba(215,242,75,0.09), transparent 55%),
+      linear-gradient(180deg,#0C0C0D,#0A0A0B);
+    border-bottom:1px solid var(--border-soft);
+  }
+  header.hero .wrap{padding-block:3.4rem 2.2rem;display:flex;flex-direction:column;gap:1rem;}
+  .brandline{display:flex;align-items:center;gap:10px;margin-bottom:.6rem;}
+  .logo-mark{
+    width:30px;height:30px;border-radius:8px;border:1px solid var(--lime);
+    display:flex;align-items:center;justify-content:center;flex:none;background:#0D0D0E;
+  }
+  .logo-mark span{font-family:var(--mono);font-weight:700;font-size:11px;color:var(--lime);letter-spacing:-0.02em;}
+  .brand-text{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);}
+  .eyebrow{
+    font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--lime);display:flex;align-items:center;gap:10px;margin:0;
+  }
+  .eyebrow::before{content:'';width:22px;height:1px;background:var(--lime);flex:none;}
+  h1.title{font-size:clamp(24px,4vw,34px);color:var(--ink);line-height:1.2;}
+  .lede{max-width:38rem;color:var(--ink-soft);font-size:14.5px;line-height:1.6;}
+
+  .status-pill{
+    display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;font-weight:600;
+    padding:4px 11px;border-radius:100px;background:rgba(255,165,61,0.12);color:var(--orange);
+    border:1px solid rgba(255,165,61,0.28);width:fit-content;
+  }
+  .status-pill::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--orange);}
+  .status-pill.ok{background:rgba(215,242,75,0.1);color:var(--lime);border-color:rgba(215,242,75,0.25);}
+  .status-pill.ok::before{background:var(--lime);}
+  .status-pill.open{background:var(--panel-raise);color:var(--ink-soft);border-color:var(--border);}
+  .status-pill.open::before{background:transparent;border:1.5px solid var(--ink-faint);width:5px;height:5px;}
+
+  /* ---------- KPI STRIP ---------- */
+  .kpis{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));
+    gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;
+  }
+  .kpi{background:var(--panel);padding:.95rem 1.05rem;display:flex;flex-direction:column;gap:.4rem;min-width:0;}
+  .kpi .v{font-family:var(--serif);font-size:1.6rem;font-weight:560;color:var(--ink);font-variant-numeric:tabular-nums;line-height:1.1;}
+  .kpi .d{font-size:12px;color:var(--ink-faint);line-height:1.5;}
+
+  /* ---------- MAIN ---------- */
+  main .wrap{padding-top:1.8rem;padding-bottom:1rem;}
+  section.act{padding:2.4rem 0;border-top:1px solid var(--border-soft);display:flex;flex-direction:column;gap:1.3rem;}
+  main .wrap > section.act:first-child{border-top:0;padding-top:.6rem;}
+  .act-hd{display:flex;align-items:baseline;gap:.8rem;}
+  .act-no{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--lime);font-weight:600;padding-top:2px;}
+  h2.sec-title{font-size:20px;}
+
+  /* ---------- PANELS / CALLOUTS ---------- */
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.4rem;min-width:0;display:flex;flex-direction:column;}
+  .panel-title{font-family:var(--serif);font-size:15.5px;font-weight:560;color:var(--ink);margin-bottom:.2rem;}
+  .panel-sub{font-size:11.5px;color:var(--ink-faint);line-height:1.55;margin-bottom:.9rem;}
+  .tag-badge{
+    display:inline-flex;align-items:center;font-family:var(--mono);font-size:9.5px;font-weight:500;
+    padding:2px 8px;border-radius:100px;background:var(--panel-raise);color:var(--ink-soft);
+    border:1px solid var(--border);margin-left:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;
+  }
+  .callout .tag-badge{margin:0 6px 0 0;}
+  .callouts{display:flex;flex-direction:column;gap:.65rem;}
+  .callout{
+    border-radius:11px;padding:.85rem 1rem;font-size:13px;display:flex;gap:.7rem;align-items:flex-start;
+    border:1px solid var(--border);background:var(--panel-raise);
+  }
+  .callout .dot{flex:none;margin-top:6px;width:7px;height:7px;border-radius:50%;}
+  .callout.watch .dot{background:var(--orange);}
+  .callout.plan .dot{background:var(--rose);}
+  .callout.good .dot{background:var(--lime);}
+  .callout p{color:var(--ink-soft);line-height:1.55;margin:0;}
+
+  /* ---------- CHARTS ---------- */
+  .plot{background:#0C0C0D;border:1px solid var(--border);border-radius:12px;padding:1rem 1rem .6rem;overflow-x:auto;}
+  .chart{width:100%;min-width:0;}
+  .chart svg{display:block;max-width:100%;height:auto;}
+  .legend{display:flex;flex-wrap:wrap;gap:.35rem 1.1rem;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-bottom:.8rem;}
+  .legend span{display:inline-flex;align-items:center;gap:.4rem;}
+  .legend i{width:.8rem;height:.5rem;border-radius:2px;display:inline-block;flex:none;}
+  .legend i.ln{height:2px;width:1rem;border-radius:1px;}
+  svg text{font-family:var(--mono);font-size:10px;fill:var(--ink-faint);}
+  svg text.v{fill:var(--ink-soft);font-weight:600;font-size:11.5px;}
+  svg text.v.cur{fill:var(--ink);font-weight:700;}
+  svg text.x{font-family:var(--sans);font-size:11px;font-weight:500;fill:var(--ink-soft);}
+  svg text.x.cur{fill:var(--ink);font-weight:700;}
+  svg text.lbs{font-family:var(--sans);font-size:11.5px;font-weight:500;fill:var(--ink-soft);}
+  svg text.lb{font-family:var(--mono);font-size:10px;fill:var(--ink-faint);}
+  svg .grid{stroke:var(--border);stroke-width:1;}
+  svg .axis{stroke:var(--bar-steady);stroke-width:1;}
+  svg .hl{fill:var(--panel-raise);}
+  .f-paidold{fill:var(--paid-old);} .f-paidnew{fill:var(--paid-new);} .f-nonpaid{fill:var(--nonpaid);} .f-se{fill:var(--se);}
+  .ln{fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+  .ln-real{stroke:var(--real);} .ln-rep{stroke:var(--reported);}
+  .hit{fill:transparent;cursor:default;}
+  .hit:focus-visible{outline:none;fill:var(--ink);fill-opacity:.05;stroke:var(--lime);stroke-width:1.5;}
+
+  /* ---------- TABLE TOGGLE ---------- */
+  .tbl{
+    align-self:flex-start;margin-top:.8rem;font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);
+    background:var(--panel-raise);border:1px solid var(--border);border-radius:100px;padding:4px 11px;cursor:pointer;
+  }
+  .tbl:hover{color:var(--lime);border-color:rgba(215,242,75,0.3);}
+
+  /* ---------- TABLES ---------- */
+  .tw{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:.8rem;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:26rem;}
+  thead th{
+    background:var(--panel-soft);color:var(--ink-faint);font-family:var(--mono);font-size:9.5px;
+    letter-spacing:.08em;text-transform:uppercase;font-weight:500;padding:.6rem .9rem;text-align:right;
+    border-bottom:1px solid var(--border);white-space:nowrap;
+  }
+  thead th:first-child{text-align:left;}
+  tbody td{padding:.6rem .9rem;border-top:1px solid var(--border-soft);text-align:right;font-family:var(--mono);
+    font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--ink-soft);}
+  tbody td:first-child{text-align:left;font-family:var(--sans);font-weight:600;color:var(--ink);}
+  tbody tr:hover td{background:var(--panel-soft);}
+
+  /* ---------- HORIZONTAL BARS ---------- */
+  .hb{display:flex;flex-direction:column;gap:.75rem;}
+  .hb .row{display:grid;grid-template-columns:minmax(8rem,12rem) 1fr;gap:.35rem 1rem;align-items:center;}
+  .hb .nm{font-size:13px;line-height:1.35;color:var(--ink-soft);font-weight:500;}
+  .hb .track{display:flex;align-items:center;gap:.6rem;min-width:0;}
+  .hb .bar{height:18px;border-radius:0 4px 4px 0;min-width:0;flex:none;}
+  .hb .val{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums;}
+  .hb .val small{color:var(--ink-faint);font-size:11px;font-weight:400;}
+  @media (max-width:32rem){.hb .row{grid-template-columns:1fr;gap:.3rem;}}
+
+  /* ---------- STATUS ---------- */
+  .status{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:1rem;}
+  .status .panel{gap:.9rem;}
+  .klist{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:.6rem;font-size:13px;color:var(--ink-soft);line-height:1.55;}
+  .klist li{padding-left:1rem;position:relative;}
+  .klist li::before{content:'';position:absolute;left:0;top:.6em;width:7px;height:7px;border-radius:50%;}
+  .ok .klist li::before{background:var(--lime);}
+  .maybe .klist li::before{background:var(--orange);}
+  .open .klist li::before{border:1.5px solid var(--ink-faint);width:5px;height:5px;}
+
+  /* ---------- NEXT STEPS ---------- */
+  .actions{display:flex;flex-direction:column;gap:.65rem;}
+  .action{border-radius:11px;padding:.9rem 1rem;display:flex;gap:.9rem;align-items:flex-start;border:1px solid var(--border);background:var(--panel-raise);}
+  .action-num{
+    flex:none;width:26px;height:26px;border-radius:50%;background:var(--panel-soft);border:1px solid var(--lime);
+    color:var(--lime);font-family:var(--mono);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;
+  }
+  .action-body{display:flex;flex-direction:column;gap:.4rem;min-width:0;}
+  .action-body p{margin:0;color:var(--ink-soft);font-size:13.5px;line-height:1.6;padding-top:2px;}
+
+  /* ---------- TOOLTIP ---------- */
+  .sw{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;}
+  #tip{
+    position:fixed;z-index:30;pointer-events:none;background:var(--panel-raise);color:var(--ink-soft);
+    border:1px solid var(--border);border-radius:10px;padding:.6rem .75rem;font-family:var(--mono);font-size:11px;line-height:1.6;
+    max-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.5);
+  }
+  #tip b{font-family:var(--sans);font-weight:600;color:var(--ink);font-size:12px;}
+
+  footer{border-top:1px solid var(--border-soft);}
+  footer .wrap{padding-block:1.6rem 3rem;display:flex;flex-direction:column;gap:.5rem;}
+  footer p{font-size:11px;color:var(--ink-faint);line-height:1.6;}
+  footer p b{color:var(--ink-soft);}
+
+  @media(max-width:34rem){
+    .act-hd{flex-direction:column;gap:.25rem;}
+    .panel{padding:1.1rem 1rem;}
+    .plot{padding:.8rem .6rem .5rem;}
+  }
+</style>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brandline">
+      <div class="logo-mark"><span>SS</span></div>
+      <div class="brand-text">So Shall We · Client Ops</div>
+    </div>
+    <p class="eyebrow">JLG Lawyers · Paid media · Weeks of 9/21 to 10/26</p>
+    <h1 class="title">Fill is down 10%. The loss is in older paid leads. Quality is down because Still Employed bookings fill the calendar.</h1>
+    <p class="lede">Paid drives about 80% of appointments. New paid bookings held steady. Appointments from older paid leads fell 16%.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <!-- ============ 01 FILL ============ -->
+    <section class="act" id="fill">
+      <div class="act-hd">
+        <span class="act-no">01</span>
+        <h2 class="sec-title">Why fill is down</h2>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><span class="v">&minus;10%</span><span class="d">Appointments vs the 5-week average (383 vs 427)</span></div>
+        <div class="kpi"><span class="v">82%</span><span class="d">of the drop is paid (36 of 44)</span></div>
+        <div class="kpi"><span class="v">&minus;3%</span><span class="d">New paid bookings, basically flat (140 vs 144)</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Appointments per week, by source and creation week</div>
+        <div class="panel-sub">Last week is highlighted.</div>
+        <div class="legend">
+          <span><i style="background:var(--paid-old)"></i>Paid, created in an earlier week</span>
+          <span><i style="background:var(--paid-new)"></i>Paid, created that week</span>
+          <span><i style="background:var(--nonpaid)"></i>Non-paid</span>
+        </div>
+        <div class="plot"><div class="chart" id="c1"></div></div>
+        <button class="tbl" type="button" data-for="t1" aria-expanded="false">View as table</button>
+        <div id="t1" hidden></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Where the 44-appointment gap sits</div>
+        <div class="panel-sub">Last week vs the average of the prior five weeks.</div>
+        <div class="hb" id="c2"></div>
+      </div>
+
+      <div class="callouts">
+        <div class="callout plan"><span class="dot"></span>
+          <p><b>Older paid leads are the loss.</b> 32 of the 44 missing appointments (&minus;16%). New paid bookings barely moved.</p></div>
+        <div class="callout good"><span class="dot"></span>
+          <p><b>New bookings count double.</b> Each new booking brings about 1.1 more from older leads later, so the calendar runs at about 2.1x new bookings (six-week pattern, not proven).</p></div>
+        <div class="callout watch"><span class="dot"></span>
+          <p><span class="tag-badge">Hypothesis</span>The week of 10/19 had the fewest new paid bookings (130) and the most Still Employed, so it left fewer leads to follow up.</p></div>
+        <div class="callout good"><span class="dot"></span>
+          <p><b>Benchmark:</b> the week of 10/5 delivered 223 new and 468 total appointments.</p></div>
+      </div>
+    </section>
+
+    <!-- ============ 02 QUALITY ============ -->
+    <section class="act" id="quality">
+      <div class="act-hd">
+        <span class="act-no">02</span>
+        <h2 class="sec-title">Why quality is down</h2>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><span class="v">5 &rarr; 162</span><span class="d">Still Employed bookings a week, week of 10/5 to week of 10/19</span></div>
+        <div class="kpi"><span class="v">92% vs 62%</span><span class="d">Lead-to-book with vs without Still Employed (week of 10/19)</span></div>
+        <div class="kpi"><span class="v">48%</span><span class="d">of 2.4.2026 opportunity bookings were Still Employed (week of 10/19)</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Lead-to-book rate, with and without Still Employed</div>
+        <div class="panel-sub">The gap between the lines is Still Employed. The latest point is still settling.</div>
+        <div class="legend">
+          <span><i class="ln" style="background:var(--reported)"></i>Including Still Employed</span>
+          <span><i class="ln" style="background:var(--real)"></i>Excluding Still Employed</span>
+        </div>
+        <div class="plot"><div class="chart" id="c3"></div></div>
+        <button class="tbl" type="button" data-for="t3" aria-expanded="false">View as table</button>
+        <div id="t3" hidden></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Still Employed booked calls by creation week</div>
+        <div class="panel-sub">The week of 10/12 holds the 10/13 Meta changes and the 10/15 landing page A/Z test.</div>
+        <div class="plot"><div class="chart" id="c4"></div></div>
+        <button class="tbl" type="button" data-for="t4" aria-expanded="false">View as table</button>
+        <div id="t4" hidden></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Still Employed share of booked calls by campaign</div>
+        <div class="panel-sub">Week of 10/19. Total booked calls in brackets.</div>
+        <div class="hb" id="c5"></div>
+      </div>
+
+      <div class="callouts">
+        <div class="callout plan"><span class="dot"></span>
+          <p><b>The 92% is not real.</b> Without Still Employed, bookings are flat at about 330 a week and lead-to-book slid from 70% to 62%.</p></div>
+        <div class="callout plan"><span class="dot"></span>
+          <p><b>They count toward fill, then cancel.</b> Usable fill is below the reported 59%. Intake's cancellation count sizes it.</p></div>
+        <div class="callout watch"><span class="dot"></span>
+          <p><b>They come through the SSW landing page.</b> 44% to 52% of bookings there. Instant Form shows none (small sample, 14).</p></div>
+        <div class="callout watch"><span class="dot"></span>
+          <p><span class="tag-badge">Likely cause</span>The 10/15 landing page test: 5, then 49, then 162. Budget changes of 15% to 20% don't explain that.</p></div>
+      </div>
+    </section>
+
+    <!-- ============ 03 STATUS ============ -->
+    <section class="act" id="status">
+      <div class="act-hd">
+        <span class="act-no">03</span>
+        <h2 class="sec-title">What we know</h2>
+      </div>
+      <div class="status">
+        <div class="panel ok">
+          <span class="status-pill ok">Confirmed</span>
+          <ul class="klist">
+            <li>Paid is about 80% of appointments.</li>
+            <li>The drop is in older paid leads.</li>
+            <li>Still Employed bookings went from 5 to 162 a week.</li>
+            <li>Still Employed counts toward fill (Intake).</li>
+          </ul>
+        </div>
+        <div class="panel maybe">
+          <span class="status-pill">Likely</span>
+          <ul class="klist">
+            <li>The landing page test drives Still Employed.</li>
+            <li>The older-lead dip follows Still Employed-heavy weeks.</li>
+          </ul>
+        </div>
+        <div class="panel open">
+          <span class="status-pill open">Open</span>
+          <ul class="klist">
+            <li>How many of last week's 383 were Still Employed or N/A?</li>
+            <li>Which landing page version lets them through?</li>
+            <li>Does last week's jump to 518 non-SE bookings hold?</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 04 NEXT STEPS ============ -->
+    <section class="act" id="next">
+      <div class="act-hd">
+        <span class="act-no">04</span>
+        <h2 class="sec-title">Next steps</h2>
+      </div>
+      <div class="actions">
+        <div class="action">
+          <div class="action-num">1</div>
+          <div class="action-body"><p><b>Get Intake's count</b> of Still Employed and N/A in last week's 383. It sizes usable fill.</p></div>
+        </div>
+        <div class="action">
+          <div class="action-num">2</div>
+          <div class="action-body"><p><b>Test both landing page versions</b> with an employed submission. Pause any that lets it through. Pass the version into HubSpot so we can split results.</p></div>
+        </div>
+        <div class="action">
+          <div class="action-num">3</div>
+          <div class="action-body"><p><b>Expect reported fill to dip</b> once the gate is fixed. Bookings that can't sign leave the calendar, and those slots open up for leads who can.</p></div>
+        </div>
+        <div class="action">
+          <div class="action-num">4</div>
+          <div class="action-body"><p><b>Grow new paid bookings</b> with no added budget by shifting spend to the ad sets with the cleanest downstream results.</p></div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Sources.</b> Appointments: Intake's weekly list, split by creation week and paid vs non-paid. Bookings, Still Employed and lead-to-book: HubSpot, Closing Session pipeline, by deal create date.</p>
+    <p><b>Notes.</b> Booked means any stage date from CS Booked through NGC. The week of 11/2 is excluded as partial. Appointment counts may differ slightly from Intake's logged fill percentage.</p>
+  </div>
+</footer>
+<div id="tip" role="tooltip" hidden></div>
+
+<script>
+(function () {
+  "use strict";
+  var WEEKS = ['9/21','9/28','10/5','10/12','10/19','10/26'];
+  var FULL = ['Sep 21 to 27','Sep 28 to Oct 4','Oct 5 to 11','Oct 12 to 18','Oct 19 to 25','Oct 26 to Nov 1'];
+  var TOT  = [406,409,468,417,436,383];
+  var NEWP = [147,136,165,142,130,140], NEWN = [46,48,58,50,74,42];
+  var EARP = [191,187,216,192,205,166], EARN = [22,38,29,33,27,35];
+  var NONP = NEWN.map(function (v, i) { return v + EARN[i]; });
+  var INCL = [70.3,66.9,69.4,71.2,91.6,91.5], EXCL = [69.8,65.2,68.3,62.1,61.5,74.3];
+  var SE = [2,9,5,49,162,120], BK = [326,358,335,381,492,638];
+  var f = function (n) { return n.toLocaleString('en-US'); };
+  var sw = function (v) { return "<span class='sw' style='background:var(" + v + ")'></span>"; };
+
+  /* Tables */
+  function table(h, rows) {
+    return '<div class="tw"><table><thead><tr>' + h.map(function (x) { return '<th>' + x + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>';
+  }
+  document.getElementById('t1').innerHTML = table(['Week of','Appointments','Paid, earlier','Paid, that week','Non-paid'],
+    WEEKS.map(function (w, i) { return [w, f(TOT[i]), f(EARP[i]), f(NEWP[i]), f(NONP[i])]; }));
+  document.getElementById('t3').innerHTML = table(['Week of','Including SE','Excluding SE','Gap (pts)'],
+    WEEKS.map(function (w, i) { return [w, INCL[i].toFixed(1) + '%', EXCL[i].toFixed(1) + '%', (INCL[i] - EXCL[i]).toFixed(1)]; }));
+  document.getElementById('t4').innerHTML = table(['Week of','Still Employed booked','Share of bookings'],
+    WEEKS.map(function (w, i) { return [w, f(SE[i]), Math.round(SE[i] / BK[i] * 100) + '%']; }));
+  document.querySelectorAll('.tbl').forEach(function (b) {
+    b.addEventListener('click', function () {
+      var t = document.getElementById(b.dataset.for);
+      t.hidden = !t.hidden; b.setAttribute('aria-expanded', String(!t.hidden));
+      b.textContent = t.hidden ? 'View as table' : 'Hide table';
+    });
+  });
+
+  /* Chart helpers */
+  function frame(el, h, ml, mr, mt, mb) {
+    var W = Math.max(280, Math.floor(el.clientWidth));
+    return { W: W, H: h, ml: ml, mr: mr, mt: mt, mb: mb, pw: W - ml - mr, ph: h - mt - mb };
+  }
+  function yGrid(F, ticks, ymap, fmt) {
+    return ticks.map(function (t) {
+      var y = ymap(t);
+      return '<line class="grid" x1="' + F.ml + '" x2="' + (F.W - F.mr) + '" y1="' + y + '" y2="' + y + '"/>' +
+        '<text x="' + (F.ml - 8) + '" y="' + (y + 3) + '" text-anchor="end">' + fmt(t) + '</text>';
+    }).join('');
+  }
+  function roundTop(x, yt, w, yb, r) {
+    return 'M' + x + ',' + yb + ' V' + (yt + r) + ' Q' + x + ',' + yt + ' ' + (x + r) + ',' + yt + ' H' + (x + w - r) +
+      ' Q' + (x + w) + ',' + yt + ' ' + (x + w) + ',' + (yt + r) + ' V' + yb + ' Z';
+  }
+  function svgOpen(F, label) {
+    return '<svg width="' + F.W + '" height="' + F.H + '" viewBox="0 0 ' + F.W + ' ' + F.H + '" role="img" aria-label="' + label + '">';
+  }
+
+  /* Chart 1: stacked columns */
+  function chart1() {
+    var el = document.getElementById('c1');
+    var narrow = el.clientWidth < 520;
+    var F = frame(el, narrow ? 290 : 330, 38, narrow ? 6 : 140, 24, 30);
+    var y = function (v) { return F.mt + F.ph * (1 - v / 500); };
+    var band = F.pw / 6, bw = narrow ? 24 : 32;
+    var s = svgOpen(F, 'Stacked columns of weekly appointments by source. Totals: 406, 409, 468, 417, 436, 383.');
+    s += '<rect class="hl" x="' + (F.ml + band * 5 + 2) + '" y="' + (F.mt - 6) + '" width="' + (band - 4) + '" height="' + (F.ph + 6) + '" rx="6"/>';
+    s += yGrid(F, [0,100,200,300,400,500], y, f);
+    for (var i = 0; i < 6; i++) {
+      var cx = F.ml + band * (i + .5), x0 = cx - bw / 2, cur = i === 5;
+      var segs = [[EARP[i], 'f-paidold'], [NEWP[i], 'f-paidnew'], [NONP[i], 'f-nonpaid']];
+      var base = 0;
+      segs.forEach(function (sg, k) {
+        var yt = y(base + sg[0]), yb = y(base) - (k > 0 ? 2 : 0);
+        if (k === 2) s += '<path class="' + sg[1] + '" d="' + roundTop(x0, yt, bw, yb, 4) + '"/>';
+        else s += '<rect class="' + sg[1] + '" x="' + x0 + '" y="' + yt + '" width="' + bw + '" height="' + (yb - yt) + '"/>';
+        base += sg[0];
+      });
+      s += '<text class="v' + (cur ? ' cur' : '') + '" x="' + cx + '" y="' + (y(TOT[i]) - 8) + '" text-anchor="middle">' + TOT[i] + '</text>';
+      s += '<text class="x' + (cur ? ' cur' : '') + '" x="' + cx + '" y="' + (F.H - 9) + '" text-anchor="middle">' + WEEKS[i] + '</text>';
+      var tip = '<b>Week of ' + FULL[i] + '</b><br>' + f(TOT[i]) + ' appointments<br>' + sw('--paid-old') + 'Paid, earlier: ' + EARP[i] +
+        '<br>' + sw('--paid-new') + 'Paid, that week: ' + NEWP[i] + '<br>' + sw('--nonpaid') + 'Non-paid: ' + NONP[i] + ' (' + NEWN[i] + ' new, ' + EARN[i] + ' earlier)';
+      s += '<rect class="hit" tabindex="0" x="' + (F.ml + band * i) + '" y="' + F.mt + '" width="' + band + '" height="' + F.ph + '" data-tip="' + tip + '" aria-label="Week of ' + FULL[i] + ': ' + TOT[i] + ' appointments"/>';
+    }
+    s += '<line class="axis" x1="' + F.ml + '" x2="' + (F.W - F.mr) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
+    if (!narrow) {
+      var lx = F.ml + band * 5.5 + bw / 2 + 14;
+      var mids = [[EARP[5] / 2, 'Paid, earlier ' + EARP[5], '--paid-old'], [EARP[5] + NEWP[5] / 2, 'Paid, new ' + NEWP[5], '--paid-new'], [EARP[5] + NEWP[5] + NONP[5] / 2, 'Non-paid ' + NONP[5], '--nonpaid']];
+      mids.forEach(function (m) {
+        s += '<rect x="' + lx + '" y="' + (y(m[0]) - 4) + '" width="8" height="8" rx="2" style="fill:var(' + m[2] + ')"/>' +
+          '<text class="lbs" x="' + (lx + 14) + '" y="' + (y(m[0]) + 4) + '">' + m[1] + '</text>';
+      });
+    }
+    el.innerHTML = s + '</svg>';
+  }
+
+  /* Chart 3: lines */
+  function chart3() {
+    var el = document.getElementById('c3');
+    var narrow = el.clientWidth < 520;
+    var F = frame(el, narrow ? 260 : 290, 42, narrow ? 10 : 140, 20, 30);
+    var y = function (v) { return F.mt + F.ph * (1 - (v - 50) / 50); };
+    var band = F.pw / 6;
+    var X = function (i) { return F.ml + band * (i + .5); };
+    var s = svgOpen(F, 'Lead to booking rate by creation week. Including Still Employed: 70, 67, 69, 71, 92, 92 percent. Excluding: 70, 65, 68, 62, 62, 74 percent.');
+    s += yGrid(F, [50,60,70,80,90,100], y, function (t) { return t + '%'; });
+    var path = function (arr) { return arr.map(function (v, i) { return (i ? 'L' : 'M') + X(i) + ',' + y(v); }).join(' '); };
+    var gap = INCL.map(function (v, i) { return (i ? 'L' : 'M') + X(i) + ',' + y(v); }).join(' ') + ' ' +
+      EXCL.slice().reverse().map(function (v, j) { return 'L' + X(5 - j) + ',' + y(v); }).join(' ') + ' Z';
+    s += '<path d="' + gap + '" style="fill:var(--rose);opacity:.08"/>';
+    s += '<path class="ln ln-rep" d="' + path(INCL) + '"/><path class="ln ln-real" d="' + path(EXCL) + '"/>';
+    for (var i = 0; i < 6; i++) {
+      var cur = i === 5;
+      s += '<circle cx="' + X(i) + '" cy="' + y(INCL[i]) + '" r="4" style="fill:var(--panel);stroke:var(--reported);stroke-width:2"/>';
+      if (cur) s += '<circle cx="' + X(i) + '" cy="' + y(EXCL[i]) + '" r="5" style="fill:#0C0C0D;stroke:var(--real);stroke-width:2;stroke-dasharray:3 2"/>';
+      else s += '<circle cx="' + X(i) + '" cy="' + y(EXCL[i]) + '" r="4" style="fill:var(--real);stroke:#0C0C0D;stroke-width:2"/>';
+      s += '<text class="x' + (cur ? ' cur' : '') + '" x="' + X(i) + '" y="' + (F.H - 9) + '" text-anchor="middle">' + WEEKS[i] + '</text>';
+      var tip = '<b>Week of ' + FULL[i] + '</b><br>' + sw('--reported') + 'Including SE: ' + INCL[i].toFixed(1) + '%<br>' + sw('--real') + 'Excluding SE: ' + EXCL[i].toFixed(1) + '%<br>Gap: ' + (INCL[i] - EXCL[i]).toFixed(1) + ' pts';
+      s += '<rect class="hit" tabindex="0" x="' + (F.ml + band * i) + '" y="' + F.mt + '" width="' + band + '" height="' + F.ph + '" data-tip="' + tip + '" aria-label="Week of ' + FULL[i] + ': including SE ' + INCL[i] + ' percent, excluding ' + EXCL[i] + ' percent"/>';
+    }
+    if (!narrow) {
+      s += '<text class="lbs" x="' + (X(5) + 14) + '" y="' + (y(INCL[5]) + 4) + '">Incl. SE ' + INCL[5].toFixed(1) + '%</text>';
+      s += '<text class="lbs" x="' + (X(5) + 14) + '" y="' + (y(EXCL[5]) + 4) + '" style="fill:var(--lime)">Excl. SE ' + EXCL[5].toFixed(1) + '%</text>';
+    }
+    el.innerHTML = s + '</svg>';
+  }
+
+  /* Chart 4: Still Employed columns */
+  function chart4() {
+    var el = document.getElementById('c4');
+    var narrow = el.clientWidth < 520;
+    var F = frame(el, narrow ? 240 : 260, 38, narrow ? 6 : 30, 30, 30);
+    var y = function (v) { return F.mt + F.ph * (1 - v / 180); };
+    var band = F.pw / 6, bw = narrow ? 24 : 32;
+    var s = svgOpen(F, 'Still Employed booked calls by creation week: 2, 9, 5, 49, 162, 120.');
+    s += yGrid(F, [0,50,100,150], y, f);
+    for (var i = 0; i < 6; i++) {
+      var cx = F.ml + band * (i + .5), x0 = cx - bw / 2, yt = y(SE[i]), yb = y(0);
+      if (yb - yt > 8) s += '<path class="f-se" d="' + roundTop(x0, yt, bw, yb, 4) + '"/>';
+      else s += '<rect class="f-se" x="' + x0 + '" y="' + yt + '" width="' + bw + '" height="' + Math.max(yb - yt, 1) + '"/>';
+      s += '<text class="v" x="' + cx + '" y="' + (yt - 8) + '" text-anchor="middle"' + (SE[i] >= 100 ? ' style="fill:var(--rose)"' : '') + '>' + SE[i] + '</text>';
+      s += '<text class="x" x="' + cx + '" y="' + (F.H - 9) + '" text-anchor="middle">' + WEEKS[i] + '</text>';
+      var tip = '<b>Week of ' + FULL[i] + '</b><br>' + SE[i] + ' Still Employed booked calls<br>' + Math.round(SE[i] / BK[i] * 100) + '% of ' + f(BK[i]) + ' bookings';
+      s += '<rect class="hit" tabindex="0" x="' + (F.ml + band * i) + '" y="' + F.mt + '" width="' + band + '" height="' + F.ph + '" data-tip="' + tip + '" aria-label="Week of ' + FULL[i] + ': ' + SE[i] + ' Still Employed booked calls"/>';
+    }
+    s += '<line class="axis" x1="' + F.ml + '" x2="' + (F.W - F.mr) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
+    if (!narrow) {
+      var ax = F.ml + band * 3.5;
+      s += '<text class="lb" x="' + ax + '" y="' + (F.mt - 14) + '" text-anchor="middle">Meta changes 10/13</text>';
+      s += '<text class="lb" x="' + ax + '" y="' + (F.mt) + '" text-anchor="middle">LP test live 10/15</text>';
+    }
+    el.innerHTML = s + '</svg>';
+  }
+
+  /* Horizontal bars (HTML) */
+  function hbars(id, rows, max) {
+    document.getElementById(id).innerHTML = rows.map(function (r) {
+      var w = Math.round(r.v / max * 100);
+      return '<div class="row" title="' + r.title + '"><div class="nm">' + r.name + '</div><div class="track">' +
+        (w > 0 ? '<div class="bar" style="width:' + w + '%;max-width:calc(100% - 118px);background:var(' + r.c + ')"></div>' : '') +
+        '<div class="val">' + r.val + '</div></div></div>';
+    }).join('');
+  }
+  hbars('c2', [
+    { name: 'Paid, created in an earlier week', v: 32, c: '--paid-old', val: '−32 <small>(−16%)</small>', title: '166 vs 198 average' },
+    { name: 'Non-paid', v: 8, c: '--nonpaid', val: '−8 <small>(−9%)</small>', title: '77 vs 85 average' },
+    { name: 'Paid, created that week', v: 4, c: '--paid-new', val: '−4 <small>(−3%)</small>', title: '140 vs 144 average' }
+  ], 32);
+  hbars('c5', [
+    { name: '8.13.2026 opportunity <span class="tag-badge">SSW LP</span>', v: 52, c: '--se', val: '52% <small>(16 of 31)</small>', title: '16 Still Employed of 31 booked' },
+    { name: '2.4.2026 opportunity <span class="tag-badge">SSW LP</span>', v: 48, c: '--se', val: '48% <small>(76 of 160)</small>', title: '76 Still Employed of 160 booked' },
+    { name: 'Core schedule <span class="tag-badge">SSW LP</span>', v: 44, c: '--se', val: '44% <small>(42 of 96)</small>', title: '42 Still Employed of 96 booked' },
+    { name: 'Defense', v: 33, c: '--se', val: '33% <small>(6 of 18)</small>', title: '6 Still Employed of 18 booked' },
+    { name: 'AT Lookalike', v: 24, c: '--se', val: '24% <small>(10 of 41)</small>', title: '10 Still Employed of 41 booked' },
+    { name: 'Employment form 2.20.2026', v: 8, c: '--se', val: '8% <small>(3 of 38)</small>', title: '3 Still Employed of 38 booked' },
+    { name: 'Other channels', v: 8, c: '--se', val: '8% <small>(7 of 83)</small>', title: '7 Still Employed of 83 booked' },
+    { name: 'Instant forms 8.31 and 9.1', v: 0, c: '--se', val: '0% <small>(0 of 14)</small>', title: '0 Still Employed of 14 booked' }
+  ], 52);
+
+  function renderAll() { chart1(); chart3(); chart4(); }
+  renderAll();
+  var lastW = {};
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function (entries) {
+      var changed = false;
+      entries.forEach(function (e) {
+        var w = Math.floor(e.contentRect.width);
+        if (lastW[e.target.id] !== w) { lastW[e.target.id] = w; changed = true; }
+      });
+      if (changed) renderAll();
+    });
+    ['c1','c3','c4'].forEach(function (id) { ro.observe(document.getElementById(id)); });
+  } else { window.addEventListener('resize', renderAll); }
+
+  /* Tooltip */
+  var tip = document.getElementById('tip');
+  function place(x, y) {
+    tip.hidden = false;
+    var r = tip.getBoundingClientRect();
+    var L = x + 14; if (L + r.width > window.innerWidth - 8) L = x - r.width - 14; if (L < 8) L = 8;
+    var T = y - r.height - 12; if (T < 8) T = y + 18;
+    tip.style.left = L + 'px'; tip.style.top = T + 'px';
+  }
+  function show(t, x, y) { tip.innerHTML = t.getAttribute('data-tip'); place(x, y); }
+  function onPointer(e) {
+    var t = e.target.closest ? e.target.closest('[data-tip]') : null;
+    if (t) show(t, e.clientX, e.clientY); else tip.hidden = true;
+  }
+  document.addEventListener('pointermove', onPointer);
+  document.addEventListener('pointerdown', onPointer);
+  document.addEventListener('pointerleave', function () { tip.hidden = true; });
+  document.addEventListener('focusin', function (e) {
+    var t = e.target.closest ? e.target.closest('[data-tip]') : null;
+    if (t) { var b = t.getBoundingClientRect(); show(t, b.left + b.width / 2, b.top + 20); }
+  });
+  document.addEventListener('focusout', function () { tip.hidden = true; });
+})();
+</script>
