@@ -1,4 +1,4 @@
-<title>JLG Lawyers — Fill Rate Case</title>
+<title>JLG Lawyers — Fill Rate Case Analysis</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -99,6 +99,14 @@
   .act-hd{display:flex;align-items:baseline;gap:.8rem;}
   .act-no{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--lime);font-weight:600;padding-top:2px;}
   h2.sec-title{font-size:20px;}
+  .sec-desc{color:var(--ink-soft);font-size:13.5px;max-width:38rem;}
+  .formula{background:#0C0C0D;border:1px solid var(--border);border-radius:12px;padding:1rem 1.15rem;}
+  .formula .flabel{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:.5rem;}
+  .formula .fexpr{font-family:var(--mono);font-size:14.5px;color:#fff;line-height:1.8;}
+  .formula .fexpr .op{color:var(--orange);}
+  .formula .fexpr .val{color:var(--lime);font-weight:600;}
+  .formula .fnote{display:block;margin-top:.3rem;font-size:11.5px;color:var(--ink-faint);font-family:var(--sans);line-height:1.5;}
+  .panel.ok .klist b{color:var(--ink);}
 
   /* ---------- PANELS / CALLOUTS ---------- */
   .panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1.3rem 1.4rem;min-width:0;display:flex;flex-direction:column;}
@@ -224,7 +232,7 @@
       <div class="brand-text">So Shall We · Client Ops</div>
     </div>
     <p class="eyebrow">JLG Lawyers · Paid media · Weeks of 9/21 to 10/26</p>
-    <h1 class="title">Fill is down 10%. The loss is in older paid leads. Quality is down because Still Employed bookings fill the calendar.</h1>
+    <h1 class="title">Fill is down 10%. The loss is in older paid leads. The Still Employed spike is a reporting issue. Quality is limited by the signals we send to Meta.</h1>
     <p class="lede">Paid drives about 80% of appointments. New paid bookings held steady. Appointments from older paid leads fell 16%.</p>
   </div>
 </header>
@@ -270,7 +278,7 @@
         <div class="callout good"><span class="dot"></span>
           <p><b>New bookings count double.</b> Each new booking brings about 1.1 more from older leads later, so the calendar runs at about 2.1x new bookings (six-week pattern, not proven).</p></div>
         <div class="callout watch"><span class="dot"></span>
-          <p><span class="tag-badge">Hypothesis</span>The week of 10/19 had the fewest new paid bookings (130) and the most Still Employed, so it left fewer leads to follow up.</p></div>
+          <p><span class="tag-badge">Hypothesis</span>The week of 10/19 had the fewest new paid bookings (130), so it left fewer leads to follow up.</p></div>
         <div class="callout good"><span class="dot"></span>
           <p><b>Benchmark:</b> the week of 10/5 delivered 223 new and 468 total appointments.</p></div>
       </div>
@@ -282,48 +290,61 @@
         <span class="act-no">02</span>
         <h2 class="sec-title">Why quality is down</h2>
       </div>
+      <p class="sec-desc">The Still Employed spike is a reporting issue, not more bookings. Quality is still down, because the signals we send back to Meta don't separate good leads from bad ones.</p>
 
       <div class="kpis">
-        <div class="kpi"><span class="v">5 &rarr; 162</span><span class="d">Still Employed bookings a week, week of 10/5 to week of 10/19</span></div>
-        <div class="kpi"><span class="v">92% vs 62%</span><span class="d">Lead-to-book with vs without Still Employed (week of 10/19)</span></div>
-        <div class="kpi"><span class="v">48%</span><span class="d">of 2.4.2026 opportunity bookings were Still Employed (week of 10/19)</span></div>
+        <div class="kpi"><span class="v">161 of 187</span><span class="d">Deals that entered the Still Employed stage the week of 10/19 had no meeting booked</span></div>
+        <div class="kpi"><span class="v">87</span><span class="d">Leads that hit both CS Booked and the Still Employed stage (corrected logic)</span></div>
+        <div class="kpi"><span class="v">127 &rarr; 51</span><span class="d">Still Employed respondents who booked: Sep 1–Oct 4 (18%) vs since Oct 5 (7.5%)</span></div>
       </div>
 
       <div class="panel">
-        <div class="panel-title">Lead-to-book rate, with and without Still Employed</div>
-        <div class="panel-sub">The gap between the lines is Still Employed. The latest point is still settling.</div>
-        <div class="legend">
-          <span><i class="ln" style="background:var(--reported)"></i>Including Still Employed</span>
-          <span><i class="ln" style="background:var(--real)"></i>Excluding Still Employed</span>
-        </div>
-        <div class="plot"><div class="chart" id="c3"></div></div>
-        <button class="tbl" type="button" data-for="t3" aria-expanded="false">View as table</button>
-        <div id="t3" hidden></div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-title">Still Employed booked calls by creation week</div>
-        <div class="panel-sub">The week of 10/12 holds the 10/13 Meta changes and the 10/15 landing page A/Z test.</div>
+        <div class="panel-title">The 5 &rarr; 162 spike is relabeling <span class="tag-badge">Reporting logic</span></div>
+        <div class="panel-sub">Deals in the Still Employed stage by creation week, as the current report counts them. JLG's Failed to Qualify – Still Employed workflow (190586263) was broken from mid-August until 10/16.</div>
         <div class="plot"><div class="chart" id="c4"></div></div>
         <button class="tbl" type="button" data-for="t4" aria-expanded="false">View as table</button>
         <div id="t4" hidden></div>
+        <div class="callouts" style="margin-top:1rem;">
+          <div class="callout watch"><span class="dot"></span>
+            <p><b>Why it broke.</b> "Bucket = Bad" was an exit goal, and another workflow set it right after survey submission, so contacts exited before the 5-minute delay. Intake moved these deals by hand until about Aug 17, which hid the problem.</p></div>
+          <div class="callout plan"><span class="dot"></span>
+            <p><b>Why it spiked.</b> Every survey submission creates a deal. Once fixed on 10/16, the workflow moved every "Yes" lead to Still Employed, including people who never booked. The report counts that stage as SE bookings, so it shows 5 &rarr; 162 and an inflated 92% lead-to-book.</p></div>
+          <div class="callout watch"><span class="dot"></span>
+            <p><b>The cancellation email doesn't cancel.</b> The meeting stays on the calendar, and the email includes a link to reschedule.</p></div>
+        </div>
+        <div class="formula" style="margin-top:1rem;">
+          <div class="flabel">Corrected Still Employed booking logic</div>
+          <div class="fexpr">CS Booked <span class="op">+</span> SE stage <span class="op">=</span> <span class="val">87</span></div>
+          <span class="fnote">Count a lead only when it hit both stages, not any lead that reached Still Employed.</span>
+        </div>
       </div>
 
       <div class="panel">
-        <div class="panel-title">Still Employed share of booked calls by campaign</div>
-        <div class="panel-sub">Week of 10/19. Total booked calls in brackets.</div>
-        <div class="hb" id="c5"></div>
+        <div class="panel-title">How DQ'd leads still reach the calendar <span class="tag-badge">Side doors</span></div>
+        <div class="panel-sub">The survey works. A "Yes" goes to the "we can't help you" page with no calendar, on both LP versions. The LP test isn't the cause.</div>
+        <div class="callouts">
+          <div class="callout plan"><span class="dot"></span>
+            <p><b>Retaking the survey.</b> They answer Yes, see the DQ page, go back and answer No, then get the calendar and our emails. About 9 a week, the biggest source today.</p></div>
+          <div class="callout plan"><span class="dot"></span>
+            <p><b>Ads straight to the calendar.</b> CORE | SCHEDULE and one other campaign link directly to the booking page, so there's no survey. Booking widget to confirm (MS, JJ).</p></div>
+          <div class="callout watch"><span class="dot"></span>
+            <p><b>JLG's own site.</b> Leads leave our page and book on jlglawyers.com or JLG's Instagram bio link, which have no survey.</p></div>
+          <div class="callout good"><span class="dot"></span>
+            <p><b>Mobile calendar.</b> /booking showed JLG's calendar on mobile, which asked again and booked leads even on Yes. Fixed today.</p></div>
+          <div class="callout good"><span class="dot"></span>
+            <p><b>Our follow-up emails.</b> The "filled form but didn't book" sequence sent DQ'd leads a booking link: 57 bookings in September. Fixed Oct 5.</p></div>
+        </div>
       </div>
 
-      <div class="callouts">
-        <div class="callout plan"><span class="dot"></span>
-          <p><b>The 92% is not real.</b> Without Still Employed, bookings are flat at about 330 a week and lead-to-book slid from 70% to 62%.</p></div>
-        <div class="callout plan"><span class="dot"></span>
-          <p><b>They count toward fill, then cancel.</b> Usable fill is below the reported 59%. Intake's cancellation count sizes it.</p></div>
-        <div class="callout watch"><span class="dot"></span>
-          <p><b>They come through the SSW landing page.</b> 44% to 52% of bookings there. Instant Form shows none (small sample, 14).</p></div>
-        <div class="callout watch"><span class="dot"></span>
-          <p><span class="tag-badge">Likely cause</span>The 10/15 landing page test: 5, then 49, then 162. Budget changes of 15% to 20% don't explain that.</p></div>
+      <div class="panel">
+        <div class="panel-title">Why quality is still down <span class="tag-badge">Team discussion</span></div>
+        <div class="panel-sub">Signals to Meta.</div>
+        <div class="callouts">
+          <div class="callout plan"><span class="dot"></span>
+            <p><b>We can only send Opportunity or Customer.</b> We use Opportunity, which beat Customer on downstream results side by side, but it sends every type of lead back to Meta.</p></div>
+          <div class="callout watch"><span class="dot"></span>
+            <p><b>We need stronger Lifecycle Stages</b> to improve the signals Meta optimizes on. This needs further team discussion.</p></div>
+        </div>
       </div>
     </section>
 
@@ -339,23 +360,24 @@
           <ul class="klist">
             <li>Paid is about 80% of appointments.</li>
             <li>The drop is in older paid leads.</li>
-            <li>Still Employed bookings went from 5 to 162 a week.</li>
+            <li>The survey routes "Yes" to the DQ page on both LP versions.</li>
+            <li>The 5 &rarr; 162 spike is relabeling; 87 leads hit both CS Booked and Still Employed.</li>
             <li>Still Employed counts toward fill (Intake).</li>
           </ul>
         </div>
         <div class="panel maybe">
           <span class="status-pill">Likely</span>
           <ul class="klist">
-            <li>The landing page test drives Still Employed.</li>
-            <li>The older-lead dip follows Still Employed-heavy weeks.</li>
+            <li>Survey retries are the biggest side door today.</li>
+            <li>Opportunity signals send every lead type to Meta, which limits quality.</li>
           </ul>
         </div>
         <div class="panel open">
           <span class="status-pill open">Open</span>
           <ul class="klist">
             <li>How many of last week's 383 were Still Employed or N/A?</li>
-            <li>Which landing page version lets them through?</li>
-            <li>Does last week's jump to 518 non-SE bookings hold?</li>
+            <li>Which booking widget do CORE | SCHEDULE and the other campaign use?</li>
+            <li>Which stronger Lifecycle Stages can we send to Meta?</li>
           </ul>
         </div>
       </div>
@@ -367,21 +389,41 @@
         <span class="act-no">04</span>
         <h2 class="sec-title">Next steps</h2>
       </div>
+      <div class="panel ok">
+        <span class="status-pill ok" style="margin-bottom:.9rem;">Done</span>
+        <ul class="klist">
+          <li><b>Oct 5:</b> our follow-up emails stopped going to people who answered Yes.</li>
+          <li><b>Oct 16:</b> JLG's Still Employed workflow fixed, so it flags these leads again.</li>
+          <li><b>Today:</b> /booking shows the same calendar on desktop and mobile, so every lead follows the same rules.</li>
+        </ul>
+      </div>
       <div class="actions">
         <div class="action">
           <div class="action-num">1</div>
-          <div class="action-body"><p><b>Get Intake's count</b> of Still Employed and N/A in last week's 383. It sizes usable fill.</p></div>
+          <div class="action-body"><p><b>Fix the reporting logic.</b> Count a Still Employed booking only when the lead hit both CS Booked and the Still Employed stage.</p></div>
         </div>
         <div class="action">
           <div class="action-num">2</div>
-          <div class="action-body"><p><b>Test both landing page versions</b> with an employed submission. Pause any that lets it through. Pass the version into HubSpot so we can split results.</p></div>
+          <div class="action-body"><p><b>Get Intake's count</b> of Still Employed and N/A in last week's 383. It sizes usable fill.</p></div>
         </div>
         <div class="action">
           <div class="action-num">3</div>
-          <div class="action-body"><p><b>Expect reported fill to dip</b> once the gate is fixed. Bookings that can't sign leave the calendar, and those slots open up for leads who can.</p></div>
+          <div class="action-body"><p><b>Stop survey retries.</b> Have our pages remember a DQ, and add a permanent "ever answered Yes" flag in HubSpot to keep these leads out of our emails and let JLG catch them.</p></div>
         </div>
         <div class="action">
           <div class="action-num">4</div>
+          <div class="action-body"><p><b>Point ads at the landing page.</b> Move CORE | SCHEDULE and the other campaign to the LP, so every paid lead takes the survey.</p></div>
+        </div>
+        <div class="action">
+          <div class="action-num">5</div>
+          <div class="action-body"><p><b>JLG side:</b> their Still Employed workflow should cancel the meeting, not only send an email. Their website and IG bio calendar should go through the same survey.</p></div>
+        </div>
+        <div class="action">
+          <div class="action-num">6</div>
+          <div class="action-body"><p><b>Agree on stronger Lifecycle Stages</b> for Meta, so our signal stops sending every lead type back.</p></div>
+        </div>
+        <div class="action">
+          <div class="action-num">7</div>
           <div class="action-body"><p><b>Grow new paid bookings</b> with no added budget by shifting spend to the ad sets with the cleanest downstream results.</p></div>
         </div>
       </div>
@@ -439,9 +481,7 @@
   }
   document.getElementById('t1').innerHTML = table(['Week of','Appointments','Paid, earlier','Paid, that week','Non-paid'],
     WEEKS.map(function (w, i) { return [w, f(TOT[i]), f(EARP[i]), f(NEWP[i]), f(NONP[i])]; }));
-  document.getElementById('t3').innerHTML = table(['Week of','Including SE','Excluding SE','Gap (pts)'],
-    WEEKS.map(function (w, i) { return [w, INCL[i].toFixed(1) + '%', EXCL[i].toFixed(1) + '%', (INCL[i] - EXCL[i]).toFixed(1)]; }));
-  document.getElementById('t4').innerHTML = table(['Week of','Still Employed booked','Share of bookings'],
+  document.getElementById('t4').innerHTML = table(['Week of','In Still Employed stage','Share of reported bookings'],
     WEEKS.map(function (w, i) { return [w, f(SE[i]), Math.round(SE[i] / BK[i] * 100) + '%']; }));
   document.querySelectorAll('.tbl').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -509,37 +549,6 @@
     el.innerHTML = s + '</svg>';
   }
 
-  /* Chart 3: lines */
-  function chart3() {
-    var el = document.getElementById('c3');
-    var narrow = el.clientWidth < 520;
-    var F = frame(el, narrow ? 260 : 290, 42, narrow ? 10 : 140, 20, 30);
-    var y = function (v) { return F.mt + F.ph * (1 - (v - 50) / 50); };
-    var band = F.pw / 6;
-    var X = function (i) { return F.ml + band * (i + .5); };
-    var s = svgOpen(F, 'Lead to booking rate by creation week. Including Still Employed: 70, 67, 69, 71, 92, 92 percent. Excluding: 70, 65, 68, 62, 62, 74 percent.');
-    s += yGrid(F, [50,60,70,80,90,100], y, function (t) { return t + '%'; });
-    var path = function (arr) { return arr.map(function (v, i) { return (i ? 'L' : 'M') + X(i) + ',' + y(v); }).join(' '); };
-    var gap = INCL.map(function (v, i) { return (i ? 'L' : 'M') + X(i) + ',' + y(v); }).join(' ') + ' ' +
-      EXCL.slice().reverse().map(function (v, j) { return 'L' + X(5 - j) + ',' + y(v); }).join(' ') + ' Z';
-    s += '<path d="' + gap + '" style="fill:var(--rose);opacity:.08"/>';
-    s += '<path class="ln ln-rep" d="' + path(INCL) + '"/><path class="ln ln-real" d="' + path(EXCL) + '"/>';
-    for (var i = 0; i < 6; i++) {
-      var cur = i === 5;
-      s += '<circle cx="' + X(i) + '" cy="' + y(INCL[i]) + '" r="4" style="fill:var(--panel);stroke:var(--reported);stroke-width:2"/>';
-      if (cur) s += '<circle cx="' + X(i) + '" cy="' + y(EXCL[i]) + '" r="5" style="fill:#0C0C0D;stroke:var(--real);stroke-width:2;stroke-dasharray:3 2"/>';
-      else s += '<circle cx="' + X(i) + '" cy="' + y(EXCL[i]) + '" r="4" style="fill:var(--real);stroke:#0C0C0D;stroke-width:2"/>';
-      s += '<text class="x' + (cur ? ' cur' : '') + '" x="' + X(i) + '" y="' + (F.H - 9) + '" text-anchor="middle">' + WEEKS[i] + '</text>';
-      var tip = '<b>Week of ' + FULL[i] + '</b><br>' + sw('--reported') + 'Including SE: ' + INCL[i].toFixed(1) + '%<br>' + sw('--real') + 'Excluding SE: ' + EXCL[i].toFixed(1) + '%<br>Gap: ' + (INCL[i] - EXCL[i]).toFixed(1) + ' pts';
-      s += '<rect class="hit" tabindex="0" x="' + (F.ml + band * i) + '" y="' + F.mt + '" width="' + band + '" height="' + F.ph + '" data-tip="' + tip + '" aria-label="Week of ' + FULL[i] + ': including SE ' + INCL[i] + ' percent, excluding ' + EXCL[i] + ' percent"/>';
-    }
-    if (!narrow) {
-      s += '<text class="lbs" x="' + (X(5) + 14) + '" y="' + (y(INCL[5]) + 4) + '">Incl. SE ' + INCL[5].toFixed(1) + '%</text>';
-      s += '<text class="lbs" x="' + (X(5) + 14) + '" y="' + (y(EXCL[5]) + 4) + '" style="fill:var(--lime)">Excl. SE ' + EXCL[5].toFixed(1) + '%</text>';
-    }
-    el.innerHTML = s + '</svg>';
-  }
-
   /* Chart 4: Still Employed columns */
   function chart4() {
     var el = document.getElementById('c4');
@@ -547,7 +556,7 @@
     var F = frame(el, narrow ? 240 : 260, 38, narrow ? 6 : 30, 30, 30);
     var y = function (v) { return F.mt + F.ph * (1 - v / 180); };
     var band = F.pw / 6, bw = narrow ? 24 : 32;
-    var s = svgOpen(F, 'Still Employed booked calls by creation week: 2, 9, 5, 49, 162, 120.');
+    var s = svgOpen(F, 'Deals in the Still Employed stage by creation week, as currently reported: 2, 9, 5, 49, 162, 120.');
     s += yGrid(F, [0,50,100,150], y, f);
     for (var i = 0; i < 6; i++) {
       var cx = F.ml + band * (i + .5), x0 = cx - bw / 2, yt = y(SE[i]), yb = y(0);
@@ -555,14 +564,13 @@
       else s += '<rect class="f-se" x="' + x0 + '" y="' + yt + '" width="' + bw + '" height="' + Math.max(yb - yt, 1) + '"/>';
       s += '<text class="v" x="' + cx + '" y="' + (yt - 8) + '" text-anchor="middle"' + (SE[i] >= 100 ? ' style="fill:var(--rose)"' : '') + '>' + SE[i] + '</text>';
       s += '<text class="x" x="' + cx + '" y="' + (F.H - 9) + '" text-anchor="middle">' + WEEKS[i] + '</text>';
-      var tip = '<b>Week of ' + FULL[i] + '</b><br>' + SE[i] + ' Still Employed booked calls<br>' + Math.round(SE[i] / BK[i] * 100) + '% of ' + f(BK[i]) + ' bookings';
-      s += '<rect class="hit" tabindex="0" x="' + (F.ml + band * i) + '" y="' + F.mt + '" width="' + band + '" height="' + F.ph + '" data-tip="' + tip + '" aria-label="Week of ' + FULL[i] + ': ' + SE[i] + ' Still Employed booked calls"/>';
+      var tip = '<b>Week of ' + FULL[i] + '</b><br>' + SE[i] + ' deals in Still Employed stage<br>Counted as ' + Math.round(SE[i] / BK[i] * 100) + '% of ' + f(BK[i]) + ' reported bookings';
+      s += '<rect class="hit" tabindex="0" x="' + (F.ml + band * i) + '" y="' + F.mt + '" width="' + band + '" height="' + F.ph + '" data-tip="' + tip + '" aria-label="Week of ' + FULL[i] + ': ' + SE[i] + ' deals in Still Employed stage"/>';
     }
     s += '<line class="axis" x1="' + F.ml + '" x2="' + (F.W - F.mr) + '" y1="' + y(0) + '" y2="' + y(0) + '"/>';
     if (!narrow) {
       var ax = F.ml + band * 3.5;
-      s += '<text class="lb" x="' + ax + '" y="' + (F.mt - 14) + '" text-anchor="middle">Meta changes 10/13</text>';
-      s += '<text class="lb" x="' + ax + '" y="' + (F.mt) + '" text-anchor="middle">LP test live 10/15</text>';
+      s += '<text class="lb" x="' + ax + '" y="' + (F.mt - 8) + '" text-anchor="middle">Workflow fixed 10/16</text>';
     }
     el.innerHTML = s + '</svg>';
   }
@@ -581,18 +589,8 @@
     { name: 'Non-paid', v: 8, c: '--nonpaid', val: '−8 <small>(−9%)</small>', title: '77 vs 85 average' },
     { name: 'Paid, created that week', v: 4, c: '--paid-new', val: '−4 <small>(−3%)</small>', title: '140 vs 144 average' }
   ], 32);
-  hbars('c5', [
-    { name: '8.13.2026 opportunity <span class="tag-badge">SSW LP</span>', v: 52, c: '--se', val: '52% <small>(16 of 31)</small>', title: '16 Still Employed of 31 booked' },
-    { name: '2.4.2026 opportunity <span class="tag-badge">SSW LP</span>', v: 48, c: '--se', val: '48% <small>(76 of 160)</small>', title: '76 Still Employed of 160 booked' },
-    { name: 'Core schedule <span class="tag-badge">SSW LP</span>', v: 44, c: '--se', val: '44% <small>(42 of 96)</small>', title: '42 Still Employed of 96 booked' },
-    { name: 'Defense', v: 33, c: '--se', val: '33% <small>(6 of 18)</small>', title: '6 Still Employed of 18 booked' },
-    { name: 'AT Lookalike', v: 24, c: '--se', val: '24% <small>(10 of 41)</small>', title: '10 Still Employed of 41 booked' },
-    { name: 'Employment form 2.20.2026', v: 8, c: '--se', val: '8% <small>(3 of 38)</small>', title: '3 Still Employed of 38 booked' },
-    { name: 'Other channels', v: 8, c: '--se', val: '8% <small>(7 of 83)</small>', title: '7 Still Employed of 83 booked' },
-    { name: 'Instant forms 8.31 and 9.1', v: 0, c: '--se', val: '0% <small>(0 of 14)</small>', title: '0 Still Employed of 14 booked' }
-  ], 52);
 
-  function renderAll() { chart1(); chart3(); chart4(); }
+  function renderAll() { chart1(); chart4(); }
   renderAll();
   var lastW = {};
   if (window.ResizeObserver) {
@@ -604,7 +602,7 @@
       });
       if (changed) renderAll();
     });
-    ['c1','c3','c4'].forEach(function (id) { ro.observe(document.getElementById(id)); });
+    ['c1','c4'].forEach(function (id) { ro.observe(document.getElementById(id)); });
   } else { window.addEventListener('resize', renderAll); }
 
   /* Tooltip */
